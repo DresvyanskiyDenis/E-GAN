@@ -7,7 +7,7 @@ import tensorflow as tf
 
 Tensorflow_Callable = Callable[[tf.Tensor, tf.Tensor], Tuple[tf.Tensor, tf.Tensor]]
 
-def load_AffectNet_labels(path:str)->pd.DataFrame:
+def load_AffectNet_labels_original(path:str)->pd.DataFrame:
     """
     Loads the AffectNet labels from the given path.
     The resulting DataFrame has columns: [relative_path, expression_label]
@@ -25,11 +25,27 @@ def load_AffectNet_labels(path:str)->pd.DataFrame:
     df['relative_path'] = df['relative_path'].apply(lambda x: x.replace('jpeg', 'png'))
     df['relative_path'] = df['relative_path'].apply(lambda x: x.replace('JPEG', 'png'))
 
-    df['full_path'] = df['relative_path'].apply(lambda x: os.path.join("E:\\Databases\\AffectNet\\prepared\\train\\resized",x))
+    df['full_path'] = df['relative_path'].apply(lambda x: os.path.join("C:\\Users\\Professional\\Desktop\\resized",x))
     print(df.shape)
     df = df[df["full_path"].apply(os.path.isfile)]
     df = df.drop(columns=['full_path'])
     print(df.shape)
+    df.to_csv("new_labels.csv", index=False)
+    return
+
+
+def load_AffectNet_labels_cleaned(path:str)->pd.DataFrame:
+    """
+    Loads the AffectNet labels from the given path.
+    The resulting DataFrame has columns: [relative_path, expression_label]
+    :param path: str
+            path to the csv file with labels
+    :return: pd.DataFrame
+            DataFrame with columns [relative_path, expression_label]
+    """
+    df = pd.read_csv(path)
+    df=df[['relative_path','expression_label']]
+    df.columns=['relative_path','expression_label']
     return df
 
 def scale_image(image:tf.Tensor):
@@ -40,7 +56,6 @@ def scale_image(image:tf.Tensor):
 def load_image(path_to_image):
     # read the image from disk, decode it, convert the data type to
     # floating point
-    tf.print(path_to_image)
     image = tf.io.read_file(path_to_image)
     image = tf.image.decode_png(image, channels=3)
     image = tf.cast(image, tf.float32)
